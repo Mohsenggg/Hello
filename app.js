@@ -240,7 +240,9 @@ function resetTree() {
 
 
 // Save Tree Data
-async function saveTree(treeData) {
+async function saveTree() {
+
+     const treeData = JSON.stringify(nodes);
     // Validate treeData
     console.log('Tree data to save:', treeData);
 
