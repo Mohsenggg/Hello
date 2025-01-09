@@ -276,6 +276,25 @@ async function loadTree(treeId) {
     if (error) {
         console.error('Error loading tree:', error);
     } else {
+
+
+   // Try to parse it as JSON
+        try {
+            treeData = JSON.parse(data);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            alert('Failed to parse tree data');
+            return;
+        }
+
+        console.log('Parsed treeData:', treeData);
+
+        nodes = [treeData[0]];
+        console.log('nodes array after loading:', nodes);  // Debugging: check the structure
+
+        // nodes = treeData;  // Set nodes to the parsed tree data
+        drawTree();  // Redraw the tree based on the loaded data
+        
         console.log('Tree loaded:', JSON.parse(data[0].data));
     }
 }
