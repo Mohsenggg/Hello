@@ -281,12 +281,12 @@ async function loadTree(treeId) {
 
     if (data && data.length > 0) {
         // Access the `data` field directly
-        const treeData = data[0].data; // `data[0].data` is already JSON
+        const treeData = JSON.parse(data[0].data);
 
         console.log('Tree data retrieved from database:', treeData);
 
         // Set the nodes array and redraw the tree
-        nodes = [treeData];
+        nodes = [treeData[0]]; // Assume the first node is the root node
         drawTree();
         console.log('Tree loaded successfully:', treeData);
     } else {
