@@ -3,11 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tree Visualization</title>
+    <title>Interactive Binary Tree</title>
+    <link rel="stylesheet" href="tree.css">
 </head>
 <body>
-    <button id="saveButton">Save Tree</button>
-    <button id="loadButton">Load Tree</button>
-    <script type="module" src="app.js"></script>
+    <h1>Interactive Binary Tree</h1>
+    <canvas id="treeCanvas" width="800" height="600"></canvas>
+
+    <div class="controls">
+        <input class="node-input" id="nodeValue" type="text" placeholder="Node Value">
+        <select class="node-select" id="parentNodeSelect"></select>
+        <select class="node-select" id="childPositionSelect">
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="custom">Custom</option>
+        </select>
+        <button id="addNodeBtn">Add Node</button>
+        <button id="updateNodeBtn">Update Node</button>
+        <button id="deleteNodeBtn">Delete Node</button>
+        <button id="resetTreeBtn">Reset Tree</button>
+        <input type="text" id="treeIdInput" placeholder="Enter tree ID">
+        <button id="loadTreeBtn">Load Tree</button>
+        <button id="saveTreeBtn">Save Tree</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="testSupaBase.js"></script>
 </body>
 </html>
