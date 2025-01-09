@@ -267,6 +267,14 @@ async function loadTree(treeId) {
 }
 
 
+// Attach functions to the global window object
+window.addNode = addNode;
+window.updateNode = updateNode;
+window.deleteNode = deleteNode;
+window.saveTree = saveTree;
+window.loadTree = loadTree;
+window.resetTree = resetTree;
+
 // Initialize the tree and controls
 drawTree();
 updateParentNodeSelect();
