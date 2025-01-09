@@ -106,6 +106,35 @@ function updateNode() {
     updateParentNodeSelect();
 }
 
+
+// Add deleteNode
+
+function deleteNode() {
+    if (!selectedNode) {
+        alert('Please select a node to delete.');
+        return;
+    }
+
+    if (selectedNode === rootNode) {
+        resetTree();
+        return;
+    }
+
+    const deleteFromParent = (parentNode, targetNode) => {
+        parentNode.children = parentNode.children.filter(child => child !== targetNode);
+        targetNode.children.forEach(child => deleteFromParent(targetNode, child)); // Recursively delete children
+    };
+
+    nodes = nodes.filter(node => node !== selectedNode);
+    nodes.forEach(parentNode => {
+        deleteFromParent(parentNode, selectedNode);
+    });
+
+    selectedNode = null;
+    drawTree();
+    updateParentNodeSelect();
+}
+
 // Backend Functions
 async function saveTree(treeData) {
     if (!supabase) {
