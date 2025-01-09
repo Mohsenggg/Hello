@@ -4,7 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Binary Tree</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        #treeCanvas {
+            border: 1px solid #000;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .node-input {
+            margin: 5px;
+        }
+        .node-select {
+            margin: 5px;
+        }
+        .selected-node {
+            border: 2px solid red;
+        }
+    </style>
+    <!-- <link rel="stylesheet" href="tree.css"> -->
+
 </head>
 <body>
     <h1>Interactive Binary Tree</h1>
@@ -18,16 +44,17 @@
             <option value="right">Right</option>
             <option value="custom">Custom</option>
         </select>
-        <button id="addNodeBtn">Add Node</button>
-        <button id="updateNodeBtn">Update Node</button>
-        <button id="deleteNodeBtn">Delete Node</button>
-        <button id="resetTreeBtn">Reset Tree</button>
-        <input type="text" id="treeIdInput" placeholder="Enter tree ID">
-        <button id="loadTreeBtn">Load Tree</button>
-        <button id="saveTreeBtn">Save Tree</button>
+        <button onclick="addNode()">Add Node</button>
+        <button onclick="updateNode()">Update Node</button>
+        <button onclick="deleteNode()">Delete Node</button>
+        <button onclick="resetTree()">Reset Tree</button>
+        <button onclick="saveTree()">Save Tree</button>
+<input type="text" id="treeIdInput" placeholder="Enter tree ID">
+<button onclick="loadTree(document.getElementById('treeIdInput').value)">Load Tree</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
