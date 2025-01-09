@@ -239,32 +239,26 @@ function resetTree() {
 }
 
 
+
 // Save Tree Data
 async function saveTree() {
+    console.log('Saving tree data:', nodes);
+    
 
-     const treeData = JSON.stringify(nodes);
-    // Validate treeData
-    console.log('Tree data to save:', treeData);
-
-    if (!treeData || treeData.length === 0) {
-        console.error('Error: Tree data is empty or undefined.');
-        alert('Cannot save an empty tree.');
-        return;
-    }
-
-    // Insert data into Supabase
+    // Ensure the tree data is sent as a JSON object, not a string
     const { data, error } = await supabase
         .from('trees')
-        .insert([{ data: JSON.stringify(treeData) }]);
+        .insert([{ data: nodes }]); // Save treeData directly without stringifying
 
     if (error) {
         console.error('Error saving tree:', error);
-        alert('Error saving tree. Please check the console for details.');
+        alert('An error occurred while saving the tree.');
     } else {
         console.log('Tree saved successfully:', data);
         alert('Tree saved successfully!');
     }
 }
+
 
 // Load Tree Data
 async function loadTree(treeId) {
