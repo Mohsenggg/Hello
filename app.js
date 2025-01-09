@@ -279,21 +279,24 @@ async function loadTree(treeId) {
         return;
     }
 
-    if (data && data.length > 0) {
-        // Access the `data` field directly
-        const treeData = JSON.parse(data[0].data);
+  if (data && data.length > 0) {
+        // Supabase already returns the `data` field as JSON
+        const treeData = data[0].data;
 
         console.log('Tree data retrieved from database:', treeData);
 
-        // Set the nodes array and redraw the tree
-        nodes = [treeData[0]]; // Assume the first node is the root node
-         console.log('Nodes Are :: ', nodes);
+        // Use the root node (treeData[0]) to initialize nodes
+        nodes = [treeData[0]];
+        console.log('nodes array after loading:', nodes);
+
+        // Redraw the tree
         drawTree();
-        console.log('Tree loaded successfully:', treeData);
+        console.log('Tree loaded successfully');
     } else {
         alert('Tree not found with the given ID.');
     }
 }
+
 
 
 // Attach functions to the global window object
