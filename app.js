@@ -7,30 +7,9 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.log(supabase);
 
-// Canvas setup
 const canvas = document.getElementById('treeCanvas');
 const ctx = canvas.getContext('2d');
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Supabase after the DOM is fully loaded
-
-    // Set up Event Listeners after Supabase is initialized
-    document.getElementById('addNodeBtn').addEventListener('click', addNode);
-    document.getElementById('updateNodeBtn').addEventListener('click', updateNode);
-    document.getElementById('deleteNodeBtn').addEventListener('click', deleteNode);
-    document.getElementById('resetTreeBtn').addEventListener('click', resetTree);
-    document.getElementById('saveTreeBtn').addEventListener('click', () => saveTree(nodes));
-    document.getElementById('loadTreeBtn').addEventListener('click', () => {
-        const treeId = document.getElementById('treeIdInput').value;
-        loadTree(treeId);
-    });
-
-    // Initialize tree rendering and controls
-    drawTree();
-    updateParentNodeSelect();
-});
-
-// Global variables
 let selectedNode = null;
 let draggingNode = null;
 const rootNode = { x: canvas.width / 2, y: 50, value: "Root", children: [] };
@@ -38,56 +17,95 @@ let nodes = [rootNode];
 const levelHeight = 80;
 const horizontalSpacing = 100;
 
-// Drawing Functions
+canvas.addEventListener('mousedown', startDragging);
+canvas.addEventListener('mousemove', dragNode);
+canvas.addEventListener('mouseup', stopDragging);
+
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%   Draw Functions  %%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// 1 ================================================================
 function drawTree() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawNode(rootNode);
-}
+    drawNode(nodes[0]);
+    // drawNode(rootNode);
 
+
+}
+// 2 ================================================================
 function drawNode(node) {
     if (!node) return;
+    // define what is node and its charachteristics
+    console.log('Drawing node:', node);  // Log each node being drawn
+
     const { x, y, value, children } = node;
 
-    // Draw node
+    // Draw the node itself
     ctx.beginPath();
     ctx.arc(x, y, 20, 0, 2 * Math.PI);
     ctx.fillStyle = selectedNode === node ? '#ff6961' : '#69a1f4';
     ctx.fill();
+    ctx.strokeStyle = '#000';
     ctx.stroke();
     ctx.closePath();
 
-    // Draw text
+    // Draw the node's value
     ctx.fillStyle = '#000';
+    ctx.font = '16px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(value, x, y);
 
-    // Draw children
-    children.forEach(child => {
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(child.x, child.y);
-        ctx.stroke();
-        drawNode(child);
+    // Draw lines to the child nodes
+    if (children && children.length > 0) {
+        console.log(`Drawing ${children.length} children of node: ${value}`);
+        children.forEach(child => {
+            ctx.beginPath();
+            ctx.moveTo(x, y);  // Start at the parent node
+            ctx.lineTo(child.x, child.y);  // Draw a line to the child node
+            ctx.stroke();
+            drawNode(child);  // Recursively draw the child node and its children
+        });
+}
+}
+// 3 ================================================================
+function updateParentNodeSelect() {
+    const select = document.getElementById('parentNodeSelect');
+    select.innerHTML = ''; // Clear the existing options
+
+    nodes.forEach((node, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${node.value} (Node ${index})`;
+        select.appendChild(option);
     });
 }
-
-// Node Manipulation Functions
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%  Controle Functions   %%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%% ADD %% UPDATE %% DELETE %%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// 4 ================================================================
 function addNode() {
     const value = document.getElementById('nodeValue').value;
     const parentIndex = document.getElementById('parentNodeSelect').value;
     const position = document.getElementById('childPositionSelect').value;
 
-    if (!value) return alert('Enter a value for the node.');
+    if (!value) {
+        alert('Please enter a value for the node.');
+        return;
+    }
 
-    const parentNode = nodes[parentIndex] || rootNode;
+    const parentNode = selectedNode || nodes[parentIndex];
     const newNode = { x: 0, y: 0, value, children: [] };
 
-    newNode.x = position === 'left'
-        ? parentNode.x - horizontalSpacing / (parentNode.y / levelHeight + 1)
-        : position === 'right'
-        ? parentNode.x + horizontalSpacing / (parentNode.y / levelHeight + 1)
-        : parentNode.x + (parentNode.children.length - 1) * 60;
+    if (position === 'left') {
+        newNode.x = parentNode.x - horizontalSpacing / (parentNode.y / levelHeight + 1);
+    } else if (position === 'right') {
+        newNode.x = parentNode.x + horizontalSpacing / (parentNode.y / levelHeight + 1);
+    } else {
+        newNode.x = parentNode.x + (parentNode.children.length - 1) * 60;
+    }
 
     newNode.y = parentNode.y + levelHeight;
     parentNode.children.push(newNode);
@@ -95,20 +113,28 @@ function addNode() {
 
     drawTree();
     updateParentNodeSelect();
-    document.getElementById('nodeValue').value = '';
+    document.getElementById('nodeValue').value = ''; // Clear the input field
 }
-
+// 5 ================================================================
 function updateNode() {
     const value = document.getElementById('nodeValue').value;
-    if (!selectedNode) return alert('Select a node to update.');
+
+    if (!selectedNode) {
+        alert('Please select a node to update.');
+        return;
+    }
+
+    if (!value) {
+        alert('Please enter a new value for the node.');
+        return;
+    }
+
     selectedNode.value = value;
     drawTree();
     updateParentNodeSelect();
+    document.getElementById('nodeValue').value = ''; // Clear the input field
 }
-
-
-// Add deleteNode
-
+// 6 ================================================================
 function deleteNode() {
     if (!selectedNode) {
         alert('Please select a node to delete.');
@@ -135,46 +161,75 @@ function deleteNode() {
     updateParentNodeSelect();
 }
 
-// Backend Functions
-async function saveTree(treeData) {
-    if (!supabase) {
-        alert('Supabase is not initialized.');
-        return;
-    }
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%  Movement Functions   %%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%% SELECT %% START %% MOVE %% DROP %%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// 7 ================================================================
+function selectNodeByClick(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-    try {
-        const { data, error } = await supabase.from('trees').insert([{ data: JSON.stringify(treeData) }]);
-        if (error) throw error;
-        alert('Tree saved successfully!');
-    } catch (err) {
-        console.error(err);
-        alert('Error saving tree.');
-    }
-}
-
-async function loadTree(treeId) {
-    if (!supabase) {
-        alert('Supabase is not initialized.');
-        return;
-    }
-
-    try {
-        const { data, error } = await supabase.from('trees').select('data').eq('id', treeId);
-        if (error) throw error;
-        if (data.length > 0) {
-            nodes = [JSON.parse(data[0].data)];
-            drawTree();
-            alert('Tree loaded successfully!');
-        } else {
-            alert('No tree found with the given ID.');
+    selectedNode = null;
+    nodes.forEach(node => {
+        const distance = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
+        if (distance < 20) {
+            selectedNode = node;
         }
-    } catch (err) {
-        console.error(err);
-        alert('Error loading tree.');
+    });
+
+    drawTree();
+    if (selectedNode) {
+        const index = nodes.indexOf(selectedNode);
+        document.getElementById('parentNodeSelect').value = index;
     }
 }
+// 8 ================================================================
+function startDragging(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-// Initialize
+    draggingNode = null;
+    nodes.forEach(node => {
+        const distance = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
+        if (distance < 20) {
+            draggingNode = node;
+        }
+    });
+
+    if (draggingNode) {
+        selectedNode = draggingNode;
+        const index = nodes.indexOf(selectedNode);
+        document.getElementById('parentNodeSelect').value = index;
+    }
+}
+// 9 ================================================================
+function dragNode(event) {
+    if (!draggingNode) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    draggingNode.x = x;
+    draggingNode.y = y;
+
+    drawTree();
+}
+// 10 ================================================================
+function stopDragging() {
+    draggingNode = null;
+}
+// 11 ================================================================
+
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%  Functional Functions %%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%% RESET %% LOAD %% SAVE %%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// 12 ================================================================
 function resetTree() {
     nodes = [rootNode];
     rootNode.children = [];
@@ -182,3 +237,37 @@ function resetTree() {
     drawTree();
     updateParentNodeSelect();
 }
+
+
+// Save Tree Data
+async function saveTree(treeData) {
+    const { data, error } = await supabase
+        .from('trees')
+        .insert([{ data: JSON.stringify(treeData) }]);
+
+    if (error) {
+        console.error('Error saving tree:', error);
+    } else {
+        console.log('Tree saved:', data);
+    }
+}
+
+// Load Tree Data
+async function loadTree(treeId) {
+    const { data, error } = await supabase
+        .from('trees')
+        .select('data')
+        .eq('id', treeId);
+
+    if (error) {
+        console.error('Error loading tree:', error);
+    } else {
+        console.log('Tree loaded:', JSON.parse(data[0].data));
+    }
+}
+
+
+// Initialize the tree and controls
+drawTree();
+updateParentNodeSelect();
+
