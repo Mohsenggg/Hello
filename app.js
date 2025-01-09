@@ -287,6 +287,7 @@ async function loadTree(treeId) {
 
         // Set the nodes array and redraw the tree
         nodes = [treeData[0]]; // Assume the first node is the root node
+         console.log('Nodes Are :: ', nodes);
         drawTree();
         console.log('Tree loaded successfully:', treeData);
     } else {
