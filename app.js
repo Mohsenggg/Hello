@@ -186,25 +186,22 @@ function selectNodeByClick(event) {
     }
 }
 // 8 ================================================================
+// Bug 3 || Solved - All nodes in the retrieved tree are movable not only the parent as below
 function startDragging(event) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    draggingNode = null;
-    nodes.forEach(node => {
-        const distance = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
-        if (distance < 20) {
-            draggingNode = node;
-        }
-    });
+    // Find the node closest to the click position, starting from the root node
+    draggingNode = findNodeAtPosition(x, y, nodes[0]); 
 
     if (draggingNode) {
         selectedNode = draggingNode;
-        const index = nodes.indexOf(selectedNode);
-        document.getElementById('parentNodeSelect').value = index;
+        drawTree(); // Highlight the selected node
     }
 }
+
+
 // 9 ================================================================
 function dragNode(event) {
     if (!draggingNode) return;
@@ -222,8 +219,23 @@ function dragNode(event) {
 function stopDragging() {
     draggingNode = null;
 }
-// 11 ================================================================
 
+
+function findNodeAtPosition(x, y, node) {
+    const distance = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
+    if (distance < 20) {
+        return node;
+    }
+
+    for (let child of node.children) {
+        const foundNode = findNodeAtPosition(x, y, child);
+        if (foundNode) {
+            return foundNode;
+        }
+    }
+
+    return null;
+}
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%  Functional Functions %%%%%%%%%%%%%%%%%%%%%
